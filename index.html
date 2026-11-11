@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IRONVEIL — The Last Firewall</title>
+<meta name="description" content="A cyberpunk escape room for English lessons: grammar, vocabulary and basic computer skills.">
+<meta name="theme-color" content="#04050b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2304050b'/%3E%3Cpath d='M6 8h20v4H6zM6 14h20v4H6zM6 20h20v4H6z' fill='%2300e5ff'/%3E%3Cpath d='M14 6h4v20h-4z' fill='%23ff2a6d'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="on-start">
+
+<!-- screen effects -->
+<div id="fx-scan" aria-hidden="true"></div>
+<div id="fx-flash" aria-hidden="true"><span id="fx-flash-text"></span></div>
+
+<!-- ============================ START SCREEN ============================ -->
+<section id="start">
+  <div class="start-inner">
+    <p class="kicker">NEO-OSLO // 2089</p>
+    <h1 class="glitch title" data-text="IRONVEIL">IRONVEIL</h1>
+    <p class="sub">THE LAST FIREWALL <span>— an escape room for netrunners</span></p>
+
+    <div class="start-card panel">
+      <div class="panel-bar"><span>NEW RUN</span><span class="bar-dots">▮▮▮</span></div>
+      <div class="start-body">
+        <label class="field" for="crew">
+          <span class="lbl">CREW NAME</span>
+          <input id="crew" type="text" maxlength="24" placeholder="for example: Ghost Signal" autocomplete="off">
+        </label>
+
+        <fieldset class="levels">
+          <legend class="lbl">DIFFICULTY</legend>
+          <label class="lvl"><input type="radio" name="level" value="rookie"><span><b>ROOKIE</b><small>8th grade</small></span></label>
+          <label class="lvl"><input type="radio" name="level" value="runner" checked><span><b>RUNNER</b><small>9th grade</small></span></label>
+          <label class="lvl"><input type="radio" name="level" value="legend"><span><b>LEGEND</b><small>10th grade</small></span></label>
+        </fieldset>
+
+        <div class="opt-row">
+          <label class="tog"><input type="checkbox" id="opt-sfx" checked><span>Sound effects</span></label>
+          <label class="tog"><input type="checkbox" id="opt-music" checked><span>Music</span></label>
+          <label class="tog"><input type="checkbox" id="opt-auto"><span>Read everything aloud</span></label>
+          <label class="tog"><input type="checkbox" id="opt-easy"><span>Easy-read text</span></label>
+        </div>
+
+        <div class="time-row">
+          <span>MISSION TIME: <b id="mins">60</b> MIN</span>
+          <button type="button" id="btn-tset" class="ghost-btn">Teacher settings</button>
+        </div>
+
+        <button type="button" id="btn-start" class="big">JACK IN ▶</button>
+        <button type="button" id="btn-resume" class="big alt" hidden>RESUME SAVED RUN</button>
+      </div>
+    </div>
+
+    <ul class="how">
+      <li><b>10 nodes + the core.</b> Repair the firewall before the clock reaches zero.</li>
+      <li><b>Stuck?</b> Ask your crew on the COMMS panel. The first hint in every node is free.</li>
+      <li><b>Careful.</b> Wrong answers and extra hints fill the TRACE meter.</li>
+      <li><b>Words with dots under them</b> have a Norwegian translation. Click them.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ GAME SCREEN ============================ -->
+<section id="game" hidden>
+  <header id="hud">
+    <div class="brand glitch" data-text="IRONVEIL">IRONVEIL</div>
+    <div class="hud-block prog"><span class="lbl">NODES</span><div id="pips" role="img" aria-label="Progress"></div></div>
+    <div class="hud-block"><span class="lbl">KILL WORD</span><div id="frags" aria-label="Collected letters"></div></div>
+    <div class="hud-block trace"><span class="lbl">TRACE</span><div class="meter" role="img" aria-label="Trace meter"><i id="trace-bar"></i></div><span id="trace-pct">0%</span></div>
+    <div class="hud-block timer"><span class="lbl">TIME LEFT</span><span id="clock" role="timer">60:00</span></div>
+    <div class="hud-btns">
+      <button type="button" id="btn-auto" aria-pressed="false" title="Read all story text aloud automatically">🔊 READ ALOUD</button>
+      <button type="button" id="btn-sfx" aria-pressed="true" title="Sound effects on or off">SFX</button>
+      <button type="button" id="btn-music" aria-pressed="true" title="Music on or off">MUSIC</button>
+      <button type="button" id="btn-easy" aria-pressed="false" title="Bigger, calmer text">Aa EASY-READ</button>
+      <button type="button" id="btn-teacher" title="Teacher menu" aria-label="Teacher menu">⚙</button>
+    </div>
+  </header>
+
+  <main id="stage">
+    <div id="term" class="panel">
+      <div class="panel-bar"><span>TERMINAL</span><span class="bar-dots">▮▮▮</span></div>
+      <div id="boss-view" hidden>
+        <canvas id="vanta-cv" aria-label="VANTA, a face made of falling code"></canvas>
+        <div class="vanta-name glitch" data-text="VANTA">VANTA</div>
+        <div class="integrity"><span class="lbl">VANTA SHIELD</span><div class="meter"><i id="int-bar"></i></div><b id="int-pct">100%</b></div>
+      </div>
+      <div id="log" aria-live="polite"></div>
+      <form id="cmd" autocomplete="off">
+        <label for="cmd-input" id="prompt">guest@ironveil:/$</label>
+        <input id="cmd-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal command" placeholder="type a command, for example: help">
+      </form>
+    </div>
+
+    <div id="task" class="panel">
+      <div class="panel-bar"><span id="task-title">STANDBY</span><span class="bar-dots">▮▮▮</span></div>
+      <div id="task-scroll">
+        <div id="task-body"></div>
+        <div id="comms"></div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<!-- character dialogue -->
+<div id="dialogue" hidden>
+  <div class="dlg">
+    <div class="dlg-portrait" id="dlg-portrait"></div>
+    <div class="dlg-box">
+      <div class="dlg-name"><b id="dlg-name"></b><span id="dlg-role"></span></div>
+      <p id="dlg-text"></p>
+      <div class="dlg-ctl">
+        <button type="button" id="dlg-speak" class="spk">🔊 READ ALOUD</button>
+        <span id="dlg-count"></span>
+        <button type="button" id="dlg-next" class="big">NEXT ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- small pop-up messages -->
+<div id="toasts" aria-live="polite"></div>
+
+<!-- failure overlay -->
+<div id="hacked" hidden>
+  <canvas id="hacked-cv"></canvas>
+  <div class="hacked-text">
+    <p class="kicker">CONNECTION LOST</p>
+    <h1 class="glitch" data-text="YOU HAVE BEEN HACKED">YOU HAVE BEEN HACKED</h1>
+    <p>VANTA has traced your signal and thrown you out of the system.</p>
+  </div>
+</div>
+
+<!-- ============================ END SCREEN ============================ -->
+<section id="end" hidden></section>
+
+<!-- teacher menu and other pop-ups -->
+<div id="modal" hidden><div class="modal-box panel"><div class="panel-bar"><span id="modal-title">MENU</span><button type="button" id="modal-close" aria-label="Close">✕</button></div><div id="modal-body"></div></div></div>
+
+<!-- glossary tooltip -->
+<div id="gloss-tip" role="tooltip" hidden></div>
+
+<noscript><p style="color:#fff;padding:2rem;font-family:sans-serif">This escape room needs JavaScript. Please turn it on in your browser.</p></noscript>
+
+<script src="js/config.js"></script>
+<script src="js/content.js"></script>
+<script src="js/portraits.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/puzzles.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
